@@ -1,6 +1,6 @@
 # Node Backend + (React + Vite)  Frontend
 
-This repo is example Backend Express/Node with connected  React + Vite Frontend Project 
+This repo is an example Backend Express/Node with connected  React + Vite Frontend Project 
 
 
 Run the app locally with
