@@ -2,9 +2,17 @@ const express = require("express");
 const app = express();
 const axios = require('axios');
 const cors = require("cors");
+
 const corsOptions = {
-  origin: ["http://localhost:5173", "https://nominally-related-boa.ngrok-free.app"],
+  origin: (origin, callback) => {
+    if (!origin || ["http://localhost:5173", "https://nominally-related-boa.ngrok-free.app"].includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
 };
+
 require('dotenv').config();
 
 const symblAppId = process.env.SYMBL_APP_ID;

@@ -5,7 +5,7 @@ import App from './App.jsx'
 import './index.css'
 
 import Home from './Home';
-import SupportAdmin from './SupportAdmin';
+// import SupportAdmin from './SupportAdmin';
 
 const path = window.location.pathname
 

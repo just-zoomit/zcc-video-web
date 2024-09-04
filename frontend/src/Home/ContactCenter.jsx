@@ -1,5 +1,5 @@
 /* globals VideoClient */
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 const ContactCenter = () => {
   const contactCenterIconRef = useRef(null);
