@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const axios = require('axios');
 const cors = require("cors");
+const crypto = require('crypto')
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -40,8 +41,18 @@ app.post('/webhook', async (req, res) => {
   if (!req.body) {
     return res.status(400).send('Invalid request: No body provided');
   }
+  // Webhook request event type is a challenge-response check
+if(req.body.event === 'endpoint.url_validation') {
+  const hashForValidate = crypto.createHmac('sha256', process.env.ZOOM_WEBHOOK_SECRET_TOKEN).update(req.body.payload.plainToken).digest('hex')
+  console.log("hashForValidate", hashForValidate);
+  res.status(200)
+  res.json({
+    "plainToken": req.body.payload.plainToken,
+    "encryptedToken": hashForValidate
+  })
+}
 
-  if (req.headers.authorization !== process.env.zoom_verification_token) {
+  if (req.headers.authorization !== process.env.ZOOM_VERIFICATION_TOKEN) {
     console.log("req.headers.authorization", req.headers.authorization);
     return res.status(401).send('Unauthorized request to Zoom Chatbot.');
   }
