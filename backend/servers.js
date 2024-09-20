@@ -4,6 +4,8 @@ const axios = require('axios');
 const cors = require("cors");
 const crypto = require('crypto')
 
+const webhookRoutes = require('./routes/webhookRoutes');
+
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || ["http://localhost:5173", "https://nominally-related-boa.ngrok-free.app"].includes(origin)) {
@@ -31,8 +33,13 @@ app.get("/api", (req, res) => {
   res.json({ fruits: ["apple", "strawberry", "pineapple"] });
 });
 
+
+// Use the webhook routes
+app.use('/', webhookRoutes);
+
+
 // Team Chat Webhook route
-app.post('/webhook', async (req, res) => {
+app.post('/webhook-void', async (req, res) => {
 
   // Process the webhook data (req.body) as needed
   console.log("ZCC Webhook:", req.body);

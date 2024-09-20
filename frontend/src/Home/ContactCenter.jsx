@@ -3,6 +3,13 @@ import { useEffect, useRef } from 'react';
 
 const ContactCenter = () => {
   const contactCenterIconRef = useRef(null);
+  const cePrivateKey = import.meta.env.VITE_CE_PRIVATE_KEY;
+  const ceProjectId = import.meta.env.VITE_CE_PROJECT_ID;
+  const apiKeyEntryId = import.meta.env.VITE_API_KEY_ZCC_ENTRYID;
+  const apiKeyData = import.meta.env.VITE_API_KEY_ZCC_DATA_API_KEY;
+
+  console.log(import.meta.env);
+  console.log(cePrivateKey, ceProjectId, apiKeyEntryId, apiKeyData);
 
   useEffect(() => {
     // Dynamically load the script
@@ -53,7 +60,7 @@ const ContactCenter = () => {
     
       <div id="contact-center-icon" ref={contactCenterIconRef}>
         {/* Your icon goes here */}
-        <button>Start Contact Center</button>
+    
       </div>
     </div>
   );
