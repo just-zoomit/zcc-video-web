@@ -34,39 +34,9 @@ app.get("/api", (req, res) => {
 });
 
 
-// Use the webhook routes
+// Use the webhook routes for to handle incoming webhook requests
 app.use('/', webhookRoutes);
 
-
-// Team Chat Webhook route
-app.post('/webhook-void', async (req, res) => {
-
-  // Process the webhook data (req.body) as needed
-  console.log("ZCC Webhook:", req.body);
-  // res.status(200).send("OK");
-
-  if (!req.body) {
-    return res.status(400).send('Invalid request: No body provided');
-  }
-  // Webhook request event type is a challenge-response check
-if(req.body.event === 'endpoint.url_validation') {
-  const hashForValidate = crypto.createHmac('sha256', process.env.ZOOM_WEBHOOK_SECRET_TOKEN).update(req.body.payload.plainToken).digest('hex')
-  console.log("hashForValidate", hashForValidate);
-  res.status(200)
-  res.json({
-    "plainToken": req.body.payload.plainToken,
-    "encryptedToken": hashForValidate
-  })
-}
-
-  if (req.headers.authorization !== process.env.ZOOM_VERIFICATION_TOKEN) {
-    console.log("req.headers.authorization", req.headers.authorization);
-    return res.status(401).send('Unauthorized request to Zoom Chatbot.');
-  }
-
-  // Respond to the webhook request
-  res.send('Hello Zoom Contact Center!');
-});
 
 app.get('/symbl-token', async (req, res) => {
   try {

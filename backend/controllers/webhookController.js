@@ -27,7 +27,7 @@ const handleWebhookEvent = (req, res) => {
   }
 };
 
-// Example handler for user logout
+// Handler for user logout
 const handleUserLogout = (req, res) => {
     const userData = req.body.payload; // Adjust based on actual payload structure
     console.log('User Logout Event:', userData);
@@ -35,7 +35,7 @@ const handleUserLogout = (req, res) => {
     res.status(200).send('User logout handled.');
   };
   
-  // Example handler for engagement ended
+  // Handler for engagement ended
   const handleEngagementEnded = (req, res) => {
     const engagementData = req.body.payload; // Adjust based on actual payload structure
     console.log('Engagement Ended Event:', engagementData);
@@ -60,5 +60,5 @@ const handleUrlValidation = (req, res) => {
   };
 
   module.exports = {
-    handleWebhookEvent,
-  };
+  handleWebhookEvent,
+};
