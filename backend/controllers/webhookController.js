@@ -74,60 +74,80 @@ const downloadRecording = async (downloadUrl, recordingId) => {
     console.error(`Error downloading recording ${recordingId}:`, error);
   }
 };
-
-// Function to fetch recording details by recording ID
-const fetchRecordingDetails = async () => {
-  const config = {
-    method: 'get',
-    url: `https://api.zoom.us/v2/contact_center/recordings`,
-    headers: { 
-      'Authorization': `Bearer ${process.env.VITE_ZOOM_JWT_TOKEN}` // Use your JWT token or OAuth access token here
+// Function to fetch recording details from Zoom API
+const fetchRecordingDetails = async (nextPageToken = '') => {
+    const config = {
+      method: 'get',
+      url: `https://api.zoom.us/v2/contact_center/recordings?next_page_token=${nextPageToken}`,
+      headers: { 
+        'Authorization': `Bearer ${process.env.VITE_ZOOM_JWT_TOKEN}`,
+        'Content-Type': 'application/json',
+      }
+    };
+  
+    try {
+      const response = await axios.request(config);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching recording details: `, error.response?.data?.message || error.message);
+      return null;
     }
   };
-
-  try {
-    const response = await axios.request(config);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching details for recording ${recordingId}:`, error);
-    return null;
-  }
-};
+  
 
 // Handler for the "contact_center.recording_completed" event
 const handleRecordingCompleted = async (req, res) => {
     console.log('Recording Completed Event:', req.body.payload);
     
-    // Get the recording ID from the event payload
-    // const recordingId_void = req.body.payload.object.recording_id;
-    const recordingIdToFind = 'rY6KeXjDT8WdDEA0ygYqOA'; // Example of the recording ID to match
+    const recordingIdToFind = req.body.payload.object.recording_id;
     
     if (!recordingIdToFind) {
       return res.status(400).send('Recording ID not found in the payload');
     }
   
     console.log(`Received event for recording ID: ${recordingIdToFind}`);
+    
+    let nextPageToken = '';
+    let recordingToDownload = null;
   
-    // Fetch the recording details using a function that gets the details for a range of time
-    const recordingDetails = await fetchRecordingDetails(); 
+    // Loop through pages until the recording is found or no more pages are left
+    while (!recordingToDownload) {
+      const recordingDetails = await fetchRecordingDetails(nextPageToken);
   
-    // Find the recording that matches the recordingIdToFind in the list of recordings
-    const recordingToDownload = recordingDetails.recordings.find(
-      (recording) => recording.recording_id === recordingIdToFind);
+      if (!recordingDetails || !recordingDetails.recordings) {
+        console.error('No recordings found.');
+        return res.status(404).send('No recordings found.');
+      }
   
-    if (recordingToDownload && recordingToDownload.download_url) {
-      console.log(`Downloading recording with ID: ${recordingIdToFind}`);
-      
-      // Download the recording
-      await downloadRecording(recordingToDownload.download_url, recordingIdToFind);
-      
-      console.log(`Recording ${recordingIdToFind} downloaded successfully.`);
-      res.status(200).send('Recording downloaded.');
-    } else {
-      console.error(`Download URL not found for recording ID: ${recordingIdToFind}`);
-      res.status(404).send('Recording details or download URL not found.');
+      // Find the recording that matches the recordingIdToFind in the current page of recordings
+      recordingToDownload = recordingDetails.recordings.find(
+        (recording) => recording.recording_id === recordingIdToFind
+      );
+  
+      // If recording found, download it
+      if (recordingToDownload) {
+        if (recordingToDownload.download_url) {
+          console.log(`Downloading recording with ID: ${recordingIdToFind}`);
+          await downloadRecording(recordingToDownload.download_url, recordingIdToFind);
+          console.log(`Recording ${recordingIdToFind} downloaded successfully.`);
+          return res.status(200).send('Recording downloaded.');
+        } else {
+          console.error(`Download URL not found for recording ID: ${recordingIdToFind}`);
+          return res.status(404).send('Download URL not found.');
+        }
+      }
+  
+      // If there's a next page, update the nextPageToken, otherwise break out of the loop
+      nextPageToken = recordingDetails.next_page_token;
+      if (!nextPageToken) {
+        break;
+      }
     }
+  
+    console.error(`Recording ID: ${recordingIdToFind} not found in any pages.`);
+    return res.status(404).send('Recording not found.');
   };
+  
 
   // Handler for user logout
 const handleMessagingTranscriptCompleted= (req, res) => {
@@ -168,6 +188,25 @@ const handleUrlValidation = (req, res) => {
       encryptedToken: hashForValidate,
     });
   };
+  
+  const getZoomAccessToken = async () => {
+    const config = {
+      method: 'post',
+      url: `https://zoom.us/oauth/token?grant_type=client_credentials`,
+      headers: {     
+        'Authorization': `Basic ${Buffer.from(`${process.env.ZOOM_CLIENT_ID}:${process.env.ZOOM_CLIENT_SECRET}`).toString('base64')}`
+      }
+    };
+
+    try {
+      const response = await axios.request(config);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching Zoom access token:`, error);
+      return null;
+    }
+    }
+
 
   module.exports = {
   handleWebhookEvent,
