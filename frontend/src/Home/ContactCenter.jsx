@@ -3,21 +3,15 @@ import { useEffect, useRef } from 'react';
 
 const ContactCenter = () => {
   const contactCenterIconRef = useRef(null);
-  const cePrivateKey = import.meta.env.VITE_CE_PRIVATE_KEY;
-  const ceProjectId = import.meta.env.VITE_CE_PROJECT_ID;
-  const apiKeyEntryId = import.meta.env.VITE_API_KEY_ZCC_ENTRYID;
-  const apiKeyData = import.meta.env.VITE_API_KEY_ZCC_DATA_API_KEY;
 
-  console.log(import.meta.env);
-  console.log(cePrivateKey, ceProjectId, apiKeyEntryId, apiKeyData);
 
   useEffect(() => {
     // Dynamically load the script
     const script = document.createElement('script');
     script.src = 'https://us01ccistatic.zoom.us/us01cci/web-sdk/video-client.js';
-    script.setAttribute('data-entry-id', 'wVVjpRmVQEqX-JjvMMds4A'); // Replace with .env variable
+    script.setAttribute('data-entry-id', import.meta.env.VITE_API_KEY_ZCC_ENTRYID); // Replace with .env variable
     script.setAttribute('data-env', 'us01');
-    script.setAttribute('data-apikey', 'bnpSbyFVRhGWMRdgizy0Tg'); // Replace with .env variable
+    script.setAttribute('data-apikey', import.meta.env.VITE_CE_PRIVATE_KEY); // Replace with .env variable
     script.async = true;
     document.body.appendChild(script);
 
@@ -29,7 +23,7 @@ const ContactCenter = () => {
       console.log('Script loaded and attached to DOM', dom);
       if (dom) {
         dom.addEventListener('click', async () => {
-          const entryId = "wVVjpRmVQEqX-JjvMMds4A"; // Replace with .env variable
+          const entryId = import.meta.env.VITE_API_KEY_ZCC_ENTRYID; // Replace with .env variable
           const videoClient = new VideoClient();
 
           await videoClient.init({
